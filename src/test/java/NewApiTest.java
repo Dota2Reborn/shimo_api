@@ -1,9 +1,13 @@
+import net.sf.json.*;
 import net.sf.json.JSONObject;
+import net.sf.json.JSONArray;
+import net.sf.json.xml.XMLSerializer;
 import org.apache.http.HttpEntity;
 import org.apache.http.NameValuePair;
 import org.apache.http.client.CookieStore;
 import org.apache.http.client.entity.UrlEncodedFormEntity;
 import org.apache.http.client.methods.CloseableHttpResponse;
+import org.apache.http.client.methods.HttpDelete;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.entity.StringEntity;
@@ -17,7 +21,10 @@ import org.testng.annotations.Test;
 
 
 import java.io.IOException;
+import java.net.URI;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.LinkedList;
 import java.util.List;
 
 
@@ -27,10 +34,10 @@ public class NewApiTest {
     private CookieStore cookies = new BasicCookieStore();
     CloseableHttpResponse response=null;
     String entityStr = null;
-    //登录url
-    String url ="https://release.shimodev.com/lizard-api/auth/password/login";
+    List<String> fileType = new LinkedList<>();
+    List<String> fileGuid = new LinkedList<>();
 
-    @Test(invocationCount = 1, threadPoolSize = 0)
+    @Test
     public void login() throws IOException {
         // 获取连接客户端工具
 //        CloseableHttpClient httpClient=HttpClients.createDefault();
@@ -120,10 +127,86 @@ public class NewApiTest {
             stringToJson = trimend(stringToJson,"]");
             System.out.println("接口返回结果是(stringToJson):="+stringToJson);
 
-            JSONObject jsonObject = JSONObject.fromObject(stringToJson);
+            String json = "{\"data\":" +  entityStr + "}";
 
+            System.out.println("接口返回结果是(json):="+json);
+            JSONObject jsonObject = JSONObject.fromObject(json);
+
+
+            System.out.println("接口返回结果是(jsonObject):="+jsonObject);
+            System.out.println("接口返回结果是(size):="+jsonObject.size());
+
+//            JSONArray jsonArray = JSONArray.fromObject(entityStr);
+//            System.out.println("接口返回结果是(jsonArray):="+jsonArray);
+//            jsonArray.getJSONArray(0)
             //todo
+            JSONArray array = (JSONArray)jsonObject.get("data");
 
+            System.out.println("接口返回结果是(size):="+array.size());
+            System.out.println("接口返回结果是(size):="+array);
+            for(int i=0;i<array.size();i++){
+                System.out.println("---------------");
+                JSONObject subObject = (JSONObject)array.get(i);
+                System.out.println("id="+subObject.get("is_folder"));
+                System.out.println("id="+subObject.get("guid"));
+                fileType.add(subObject.get("is_folder").toString());
+                fileGuid.add(subObject.get("guid").toString());
+
+            }
+            System.out.println("fileType="+fileType);
+            System.out.println("fileGuid="+fileGuid);
+            int countFile = Collections.frequency(fileType, "0");
+            int countFolder = Collections.frequency(fileType, "1");
+            System.out.println("countFile="+countFile);
+            System.out.println("countFolder="+countFolder);
+            if(array.size()==2||fileType.get(0)=="0"||fileType.get(1)=="1"){
+                System.out.println("数据正常");
+            }else{
+                for(int i = 0; i<fileType.size();i++){
+                    if(fileType.get(i).equals("1")){
+                        fileGuid.remove(i);
+                    }
+                }
+            }
+
+
+            System.out.println(response.getStatusLine().getStatusCode());
+            System.out.println(response.getStatusLine().getReasonPhrase());
+        }catch(Exception e){
+            e.printStackTrace();
+        }finally {
+
+            //释放资源
+            if(httpClient!=null) {
+                httpClient.close();
+            }
+            if (response!=null){
+                response.close();
+            }
+        }
+
+
+
+        httpClient = HttpClients.custom().setDefaultCookieStore(cookies).build();
+//        HttpPost httpPost1 = new HttpPost(testUrl.URL+testUrl.getFileList);
+        HttpDelete httpDelete = new HttpDelete(testUrl.URL+testUrl.delFile);
+
+        httpDelete.addHeader("Content-Type","application/x-www-form-urlencoded; charset=utf-8");
+        httpDelete.addHeader("Referer","https://release.shimodev.com/login?from=home");
+        httpDelete.addHeader("x-requested-with","XmlHttpRequest");
+        httpDelete.addHeader("x-source","lizard-desktop");
+        httpDelete.addHeader("Cookie", cookies.getCookies().get(0).getName() + "=" + cookies.getCookies().get(0).getValue());
+        params.clear();
+
+
+        try {
+
+            for(int i = 0; i<fileGuid.size()-1; i++){
+                httpDelete.setURI(URI.create(testUrl.URL+ testUrl.delFile + "/" + fileGuid.get(i)));
+                System.out.println(httpDelete.getURI());
+                // 执行请求
+                response = httpClient.execute(httpDelete);
+            }
             System.out.println(response.getStatusLine().getStatusCode());
             System.out.println(response.getStatusLine().getReasonPhrase());
         }catch(Exception e){
@@ -147,6 +230,8 @@ public class NewApiTest {
         public final static String URL = "https://release.shimodev.com/lizard-api";
         public final static String Login = "/auth/password/login";
         public final static String getFileList = "/files";
+        public final static String delFile = "/files";
+
     }
 
     /*
@@ -167,14 +252,4 @@ public class NewApiTest {
         }
         return inStr;
     }
-
-//    public static void main(String[] args) {
-//
-//        String testStr1 = "[,1,2,3]";
-//        System.out.println("trimstart的结果："+trimstart(testStr1,","));
-//
-//        String testStr2 = "1,2,3,";
-//        System.out.println("trimend的结果："+trimend(testStr2,","));
-//
-//    }
 }
