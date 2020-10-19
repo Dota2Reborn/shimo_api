@@ -42,6 +42,11 @@ public class ExcelDate {
                 map[r - 1][0].put(arrKey.get(c), cellValue);
             }
         }
+        try {
+            workbook.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
         return map;
 
     }
