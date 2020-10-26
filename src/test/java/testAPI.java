@@ -102,7 +102,7 @@ public class testAPI extends TestInit{
         collaboratorList = api_getCollaborator(fileGuid);
         member = (List<String>) collaboratorList.get("member");
         admin = (List<String>) collaboratorList.get("admin");
-        role = (List<String>) collaboratorList.get("role");
+//        role = (List<String>) collaboratorList.get("role");
 
         for(String str : memberList){
             if(!member.contains(str)){
@@ -127,12 +127,13 @@ public class testAPI extends TestInit{
             }
         }
 
-        if(addAdminList.size()==0){
+        if(addAdminList.size()==0 || adminList.get(0).equals("0")){
             System.out.println("管理者列表成员不需要新增");
         }else{
             api_addAdmin(fileGuid,addAdminList);
         }
-        if(delAdminList.size()==0){
+
+        if(delAdminList.size()==0 || adminList.get(0).equals("0")){
             System.out.println("管理者列表成员不需要删除");
         }else {
             api_delAdmin(fileGuid,delAdminList);
@@ -151,18 +152,16 @@ public class testAPI extends TestInit{
 
 
         collaboratorList = api_getCollaborator(fileGuid);
-        member = (List<String>) collaboratorList.get("member");
+//        member = (List<String>) collaboratorList.get("member");
         role = (List<String>) collaboratorList.get("role");
         roleList.clear();
         addMemberList.clear();
 
         for(String str : memberRole){
-//            for(String str1 : memberList){
                 if(!role.contains(str)){
                     roleList.add(str);
                     addMemberList.add(memberList.get(memberRole.indexOf(str)));
                 }
-//            }
         }
 
         if(addMemberList.size()==0){
