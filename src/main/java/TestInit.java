@@ -1,27 +1,24 @@
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
+import org.apache.commons.collections.map.ListOrderedMap;
 import org.apache.http.HttpEntity;
 import org.apache.http.NameValuePair;
 import org.apache.http.client.CookieStore;
 import org.apache.http.client.entity.UrlEncodedFormEntity;
-import org.apache.http.client.methods.CloseableHttpResponse;
-import org.apache.http.client.methods.HttpDelete;
-import org.apache.http.client.methods.HttpGet;
-import org.apache.http.client.methods.HttpPost;
+import org.apache.http.client.methods.*;
 import org.apache.http.impl.client.BasicCookieStore;
 import org.apache.http.impl.client.CloseableHttpClient;
-import org.apache.http.impl.client.DefaultHttpClient;
 import org.apache.http.impl.client.HttpClients;
 import org.apache.http.message.BasicNameValuePair;
 import org.apache.http.util.EntityUtils;
-import org.testng.annotations.*;
-
+import org.testng.annotations.AfterClass;
+import org.testng.annotations.AfterMethod;
+import org.testng.annotations.BeforeClass;
+import org.testng.annotations.BeforeMethod;
 
 import java.io.IOException;
 import java.net.URI;
-import java.net.URL;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -37,6 +34,9 @@ public class TestInit implements shimoAPI{
     public List<String> fileGuid = new LinkedList<>();
     public List<String> spaceGuid = new LinkedList<>();
     public List<Boolean> isFileAdmin = new LinkedList<>();
+    public List<String> memberList = new LinkedList<>();
+    public List<String> roleList = new LinkedList<>();
+    public List<String> adminList = new LinkedList<>();
 
     @BeforeClass
     public void firstMethod(){
@@ -48,6 +48,11 @@ public class TestInit implements shimoAPI{
         httpClient = HttpClients.custom().setDefaultCookieStore(cookies).build();
         fileType.clear();
         fileGuid.clear();
+        spaceGuid.clear();
+        isFileAdmin.clear();
+        memberList.clear();
+        adminList.clear();
+        roleList.clear();
         System.out.println("---------------------------------------");
     }
 
@@ -76,15 +81,24 @@ public class TestInit implements shimoAPI{
         public final static String delFile = "/files";
         public final static String getSpace = "/spaces";
         public final static String delSpace = "/spaces";
+        public final static String getCollaborator = "/v2/files/{guid}/collaborators";
+        public final static String addCollaborator = "/files/{guid}/collaborators";
+        public final static String delCollaborator = "/files/{guid}/collaborators/{id}";
+        public final static String setCollaborator = "/files/{guid}/collaborators/{id}";
+        public final static String addAdmin = "/files/{guid}/admins/{id}";
+        public final static String delAdmin = "/files/{guid}/admins/{id}";
+
 
     }
 
     public String StringFormat(String s){
         if(s.equals(null) || s.equals("")){
             return "0";
-        }else {
+        }else if(s.contains(".0")){
             String result = s.substring(0,s.length() - 2);
             return result;
+        }else {
+            return s;
         }
     }
 
@@ -108,7 +122,6 @@ public class TestInit implements shimoAPI{
             List<NameValuePair> params = new ArrayList<NameValuePair>();
             params.add(new BasicNameValuePair("email", email));
             params.add(new BasicNameValuePair("password", pwd));
-
 
             // 使用URL实体转换工具
             UrlEncodedFormEntity entityParam = new UrlEncodedFormEntity(params, "UTF-8");
@@ -135,19 +148,15 @@ public class TestInit implements shimoAPI{
      */
     @Override
     public List<String> api_getFile(String folderGuid){
+
         HttpGet httpGet = new HttpGet(testUrl.URL + testUrl.getFileList + "?collaboratorCount=true&folder=" + folderGuid);
         httpGet.addHeader("Content-Type","application/x-www-form-urlencoded; charset=utf-8");
         httpGet.addHeader("Referer","https://release.shimodev.com/login?from=home");
         httpGet.addHeader("x-requested-with","XmlHttpRequest");
         httpGet.addHeader("x-source","lizard-desktop");
+        httpGet.addHeader("Cookie",cookies.getCookies().get(0).getName()+"="+cookies.getCookies().get(0).getValue());
 
         try{
-            //参数封装对象
-//            List<NameValuePair> params = new ArrayList<NameValuePair>();
-//            params.add(new BasicNameValuePair("collaboratorCount","true"));
-//            params.add(new BasicNameValuePair("folder",folderGuid));
-            httpGet.addHeader("Cookie",cookies.getCookies().get(0).getName()+"="+cookies.getCookies().get(0).getValue());
-
             // 执行请求
             response = httpClient.execute(httpGet);
 
@@ -247,12 +256,9 @@ public class TestInit implements shimoAPI{
         httpGet.addHeader("Referer","https://release.shimodev.com/login?from=home");
         httpGet.addHeader("x-requested-with","XmlHttpRequest");
         httpGet.addHeader("x-source","lizard-desktop");
+        httpGet.addHeader("Cookie",cookies.getCookies().get(0).getName()+"="+cookies.getCookies().get(0).getValue());
 
         try{
-            //参数封装对象
-//            List<NameValuePair> params = new ArrayList<NameValuePair>();
-//            params.add(new BasicNameValuePair("collaboratorCount","true"));
-            httpGet.addHeader("Cookie",cookies.getCookies().get(0).getName()+"="+cookies.getCookies().get(0).getValue());
             // 执行请求
             response = httpClient.execute(httpGet);
 
@@ -321,4 +327,224 @@ public class TestInit implements shimoAPI{
             e.printStackTrace();
         }
     }
+
+    /**
+     * 获取协作者列表
+     *
+     * @author 刘晨
+     * @Time 2020-10-23
+     */
+    public ListOrderedMap api_getCollaborator(String guid){
+        memberList.clear();
+        adminList.clear();
+        roleList.clear();
+        ListOrderedMap result = new ListOrderedMap();
+        String test = testUrl.getCollaborator.replace("{guid}",guid);
+        HttpGet httpGet = new HttpGet(testUrl.URL + test + "?includeInherited=false&includeAdmin=true");
+        httpGet.addHeader("Content-Type","application/x-www-form-urlencoded; charset=utf-8");
+        httpGet.addHeader("Referer","https://release.shimodev.com/login?from=home");
+        httpGet.addHeader("x-requested-with","XmlHttpRequest");
+        httpGet.addHeader("x-source","lizard-desktop");
+        httpGet.addHeader("Cookie",cookies.getCookies().get(0).getName()+"="+cookies.getCookies().get(0).getValue());
+
+        try{
+            // 执行请求
+            response = httpClient.execute(httpGet);
+
+            int StatusCode = response.getStatusLine().getStatusCode();
+            assertEquals(StatusCode,200,"获取协作者列表失败");
+            System.out.println("获取协作者列表成功");
+
+            // 获得响应的实体对象
+            HttpEntity entity=response.getEntity();
+            entityStr = EntityUtils.toString(entity,"UTF-8");
+
+            JSONObject jsonObject = JSONObject.fromObject(entityStr);
+            JSONArray array_member = (JSONArray)jsonObject.get("roles");
+            for(int i=0;i<array_member.size();i++){
+                JSONObject subObject = (JSONObject)array_member.get(i);
+                memberList.add(subObject.get("id").toString());
+                roleList.add(subObject.get("role").toString());
+            }
+
+            JSONArray array_admin = (JSONArray)jsonObject.get("admins");
+            for(int i=0;i<array_admin.size();i++){
+                JSONObject subObject = (JSONObject)array_admin.get(i);
+                adminList.add(subObject.get("id").toString());
+            }
+
+            result.put("member",memberList);
+            result.put("admin",adminList);
+            result.put("role",roleList);
+
+        }catch(Exception e){
+            e.printStackTrace();
+        }
+
+        return result;
+    }
+
+    /**
+     * 添加协作者
+     *
+     * @author 刘晨
+     * @Time 2020-10-23
+     */
+    public void api_addCollaborator(String guid,List<String> id,List<String> role){
+        String test = testUrl.addCollaborator.replace("{guid}",guid);
+
+        HttpPost httpPost = new HttpPost(testUrl.URL + test);
+
+        httpPost.addHeader("Content-Type", "application/x-www-form-urlencoded; charset=utf-8");
+        httpPost.addHeader("Referer", "https://release.shimodev.com/login?from=home");
+        httpPost.addHeader("x-requested-with", "XmlHttpRequest");
+        httpPost.addHeader("x-source", "lizard-desktop");
+        httpPost.addHeader("Cookie", cookies.getCookies().get(0).getName() + "=" + cookies.getCookies().get(0).getValue());
+
+        try {
+            for (int i = 0; i < id.size(); i++) {
+                //参数封装对象
+                List<NameValuePair> params = new ArrayList<NameValuePair>();
+                params.add(new BasicNameValuePair("userId",id.get(i)));
+                params.add(new BasicNameValuePair("role",role.get(i)));
+
+                // 使用URL实体转换工具
+                UrlEncodedFormEntity entityParam = new UrlEncodedFormEntity(params, "UTF-8");
+                httpPost.setEntity(entityParam);
+
+                // 执行请求
+                response = httpClient.execute(httpPost);
+            }
+
+            int StatusCode = response.getStatusLine().getStatusCode();
+            assertEquals(StatusCode,200,"添加协作者失败");
+            System.out.println("添加协作者成功");
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+    }
+
+
+    /**
+     * 删除协作者列表
+     *
+     * @author 刘晨
+     * @Time 2020-10-23
+     */
+    public void api_delCollaborator(String guid,List<String> id){
+        try {
+            for (int i = 0; i < id.size(); i++) {
+                String test = testUrl.delCollaborator.replace("{guid}",guid).replace("{id}",id.get(i));
+                HttpDelete httpDelete = new HttpDelete(testUrl.URL + test);
+                httpDelete.addHeader("Content-Type", "application/x-www-form-urlencoded; charset=utf-8");
+                httpDelete.addHeader("Referer", "https://release.shimodev.com/login?from=home");
+                httpDelete.addHeader("x-requested-with", "XmlHttpRequest");
+                httpDelete.addHeader("x-source", "lizard-desktop");
+                httpDelete.addHeader("Cookie", cookies.getCookies().get(0).getName() + "=" + cookies.getCookies().get(0).getValue());
+
+                response = httpClient.execute(httpDelete);
+            }
+
+            int StatusCode = response.getStatusLine().getStatusCode();
+            assertEquals(StatusCode,204,"协作者删除失败");
+            System.out.println("协作者删除成功");
+        }catch(Exception e){
+            e.printStackTrace();
+        }
+    }
+
+    /**
+     * 添加管理者
+     *
+     * @author 刘晨
+     * @Time 2020-10-23
+     */
+    public void api_addAdmin(String guid,List<String> id){
+        try{
+            for (int i = 0; i < id.size(); i++) {
+                String test = testUrl.addAdmin.replace("{guid}", guid);
+                HttpPut httpPut = new HttpPut(testUrl.URL + test);
+                httpPut.addHeader("Content-Type", "application/x-www-form-urlencoded; charset=utf-8");
+                httpPut.addHeader("Referer", "https://release.shimodev.com/login?from=home");
+                httpPut.addHeader("x-requested-with", "XmlHttpRequest");
+                httpPut.addHeader("x-source", "lizard-desktop");
+                httpPut.addHeader("Cookie", cookies.getCookies().get(0).getName() + "=" + cookies.getCookies().get(0).getValue());
+
+                response = httpClient.execute(httpPut);
+            }
+        }catch (Exception e){
+            e.printStackTrace();
+        }
+
+        int StatusCode = response.getStatusLine().getStatusCode();
+        assertEquals(StatusCode,204,"管理者添加失败");
+        System.out.println("管理者添加成功");
+    }
+
+    /**
+     * 删除管理者列表
+     *
+     * @author 刘晨
+     * @Time 2020-10-23
+     */
+    public void api_delAdmin(String guid,List<String> id){
+        try {
+            for (int i = 0; i < id.size(); i++) {
+                String test = testUrl.delAdmin.replace("{guid}",guid).replace("{id}",id.get(i));
+                HttpDelete httpDelete = new HttpDelete(testUrl.URL + test);
+                httpDelete.addHeader("Content-Type", "application/x-www-form-urlencoded; charset=utf-8");
+                httpDelete.addHeader("Referer", "https://release.shimodev.com/login?from=home");
+                httpDelete.addHeader("x-requested-with", "XmlHttpRequest");
+                httpDelete.addHeader("x-source", "lizard-desktop");
+                httpDelete.addHeader("Cookie", cookies.getCookies().get(0).getName() + "=" + cookies.getCookies().get(0).getValue());
+
+                response = httpClient.execute(httpDelete);
+            }
+
+            int StatusCode = response.getStatusLine().getStatusCode();
+            assertEquals(StatusCode,204,"管理者删除失败");
+            System.out.println("管理者删除成功");
+        }catch(Exception e){
+            e.printStackTrace();
+        }
+    }
+
+    /**
+     * 修改协作者权限
+     *
+     * @author 刘晨
+     * @Time 2020-10-23
+     */
+    public void api_setRole(String guid,List<String> id,List<String> role){
+        try {
+            for (int i = 0; i < id.size(); i++) {
+                String test = testUrl.setCollaborator.replace("{guid}", guid).replace("{id}", id.get(i));
+                HttpPatch httpPatch = new HttpPatch(testUrl.URL + test);
+                httpPatch.addHeader("Content-Type", "application/x-www-form-urlencoded; charset=utf-8");
+                httpPatch.addHeader("Referer", "https://release.shimodev.com/login?from=home");
+                httpPatch.addHeader("x-requested-with", "XmlHttpRequest");
+                httpPatch.addHeader("x-source", "lizard-desktop");
+                httpPatch.addHeader("Cookie", cookies.getCookies().get(0).getName() + "=" + cookies.getCookies().get(0).getValue());
+
+                //参数封装对象
+                List<NameValuePair> params = new ArrayList<NameValuePair>();
+                params.add(new BasicNameValuePair("role",role.get(i)));
+
+                // 使用URL实体转换工具
+                UrlEncodedFormEntity entityParam = new UrlEncodedFormEntity(params, "UTF-8");
+                httpPatch.setEntity(entityParam);
+
+                // 执行请求
+                response = httpClient.execute(httpPatch);
+            }
+            int StatusCode = response.getStatusLine().getStatusCode();
+            assertEquals(StatusCode,200,"协作者权限修改失败");
+            System.out.println("协作者权限修改成功");
+        }catch(Exception e){
+            e.printStackTrace();
+        }
+    }
+
 }

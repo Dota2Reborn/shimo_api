@@ -1,11 +1,9 @@
+import org.apache.commons.collections.map.ListOrderedMap;
 import org.testng.annotations.DataProvider;
 import org.testng.annotations.Test;
 
 import java.io.File;
-import java.text.NumberFormat;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
+import java.util.*;
 
 public class testAPI extends TestInit{
 
@@ -15,7 +13,11 @@ public class testAPI extends TestInit{
     int desktopFolder;
     String delFiles;
     String delSpace;
-    String delFileFromFolder;
+    String setCollaborator;
+    String fileGuid;
+    List<String> memberList;
+    List<String> memberRole;
+    List<String> adminList;
 
     @DataProvider(name = "testData")
     public Object[][] data() {
@@ -27,20 +29,28 @@ public class testAPI extends TestInit{
     public void test(HashMap<String, String> data) {
         email = data.get("email");
         System.out.println("账号：" + email);
-        NumberFormat nf = NumberFormat.getInstance();
-//        pwd = data.get("password").substring(0,data.get("password").length() - 2);
-//        desktopFile = Integer.parseInt(data.get("desktop_file").substring(0,data.get("desktop_file").length() - 2));
-//        desktopFolder = Integer.parseInt(data.get("desktop_folder").substring(0,data.get("desktop_folder").length() - 2));
+
         pwd = StringFormat(data.get("password"));
         desktopFile = Integer.parseInt(StringFormat(data.get("fileCount")));
         desktopFolder = Integer.parseInt(StringFormat(data.get("folderCount")));
-        delFileFromFolder = data.get("delFileFromFolder");
+        fileGuid = data.get("fileGuid");
         delFiles = data.get("delFiles");
+        setCollaborator = data.get("setCollaborator");
         delSpace = data.get("delSpace");
+
+        memberList = Arrays.asList(StringFormat(data.get("memberID")).replace(" ", "").split(","));
+        memberRole = Arrays.asList(StringFormat(data.get("role")).replace(" ", "").split(","));
+        adminList = Arrays.asList(StringFormat(data.get("adminID")).replace(" ", "").split(","));
+        //todo
+
         if(delFiles.equals("y")){
-            delDesktopFiles(delFileFromFolder);
-        }else if(delSpace.equals("y")){
+            delDesktopFiles(fileGuid);
+        }
+        if(delSpace.equals("y")){
             delSpace();
+        }
+        if(setCollaborator.equals("y")){
+            setCollaborator();
         }
 
     }
@@ -54,12 +64,12 @@ public class testAPI extends TestInit{
             if(countFile == 0){
                 System.out.println("没有文件");
             }else{
-                countFile = countFile - 1;
+                countFile = countFile - desktopFile;
             }
             if(countFolder == 0){
                 System.out.println("没有文件夹");
             }else{
-                countFolder = countFolder - 1;
+                countFolder = countFolder - desktopFolder;
             }
             api_delFile(countFile,countFolder);
         }else{
@@ -75,5 +85,91 @@ public class testAPI extends TestInit{
         }else {
             System.out.println("没有多余协作空间需要删除");
         }
+    }
+
+    public void setCollaborator(){
+        List<String> member;
+        List<String> admin;
+        List<String> role;
+        ListOrderedMap collaboratorList;
+        List<String> addMemberList = new ArrayList<>();
+        List<String> delMemberList = new ArrayList<>();
+        List<String> addAdminList = new ArrayList<>();
+        List<String> delAdminList = new ArrayList<>();
+        List<String> roleList = new ArrayList<>();
+
+        api_login(email,pwd);
+        collaboratorList = api_getCollaborator(fileGuid);
+        member = (List<String>) collaboratorList.get("member");
+        admin = (List<String>) collaboratorList.get("admin");
+        role = (List<String>) collaboratorList.get("role");
+
+        for(String str : memberList){
+            if(!member.contains(str)){
+                addMemberList.add(str);
+                roleList.add(memberRole.get(memberList.indexOf(str)));
+            }
+        }
+        for(String str : member){
+            if(!memberList.contains(str)){
+                delMemberList.add(str);
+            }
+        }
+
+        for(String str : adminList){
+            if(!admin.contains(str)){
+                addAdminList.add(str);
+            }
+        }
+        for(String str : admin){
+            if(!adminList.contains(str)){
+                delAdminList.add(str);
+            }
+        }
+
+        if(addAdminList.size()==0){
+            System.out.println("管理者列表成员不需要新增");
+        }else{
+            api_addAdmin(fileGuid,addAdminList);
+        }
+        if(delAdminList.size()==0){
+            System.out.println("管理者列表成员不需要删除");
+        }else {
+            api_delAdmin(fileGuid,delAdminList);
+        }
+
+        if(addMemberList.size()==0){
+            System.out.println("协作者列表成员不需要新增");
+        }else{
+            api_addCollaborator(fileGuid,addMemberList,roleList);
+        }
+        if(delMemberList.size()==0){
+            System.out.println("协作者列表成员不需要删除");
+        }else {
+            api_delCollaborator(fileGuid,delMemberList);
+        }
+
+
+        collaboratorList = api_getCollaborator(fileGuid);
+        member = (List<String>) collaboratorList.get("member");
+        role = (List<String>) collaboratorList.get("role");
+        roleList.clear();
+        addMemberList.clear();
+
+        for(String str : memberRole){
+//            for(String str1 : memberList){
+                if(!role.contains(str)){
+                    roleList.add(str);
+                    addMemberList.add(memberList.get(memberRole.indexOf(str)));
+                }
+//            }
+        }
+
+        if(addMemberList.size()==0){
+            System.out.println("协作者列表成员权限不需要变更");
+        }else {
+            api_setRole(fileGuid,addMemberList,roleList);
+        }
+
     }
 }
