@@ -130,7 +130,7 @@
 <!--                    <reuseForks>true</reuseForks>-->
                     <forkMode>once</forkMode>
                     <argLine>-Dfile.encoding=UTF-8</argLine>
-                    <groups>${groupsTest}</groups>
+<!--                    <groups>${groupsTest}</groups>-->
 
                     <includes>
                         <include>**/*Test.java</include>
