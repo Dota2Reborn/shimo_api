@@ -41,7 +41,6 @@ public class testAPI extends TestInit{
         memberList = Arrays.asList(StringFormat(data.get("memberID")).replace(" ", "").split(","));
         memberRole = Arrays.asList(StringFormat(data.get("role")).replace(" ", "").split(","));
         adminList = Arrays.asList(StringFormat(data.get("adminID")).replace(" ", "").split(","));
-        //todo
 
         if(delFiles.equals("y")){
             delDesktopFiles(fileGuid);
