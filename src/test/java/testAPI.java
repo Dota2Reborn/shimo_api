@@ -78,7 +78,6 @@ public class testAPI extends TestInit{
         }
     }
 
-    //todo
     public void delSpace(){
         api_login(email,pwd);
         List<String> spaceGuid = api_space();
@@ -105,7 +104,6 @@ public class testAPI extends TestInit{
         collaboratorList = api_getCollaborator(fileGuid);
         member = (List<String>) collaboratorList.get("member");
         admin = (List<String>) collaboratorList.get("admin");
-//        role = (List<String>) collaboratorList.get("role");
 
         for(String str : memberList){
             if(!member.contains(str)){
@@ -155,7 +153,6 @@ public class testAPI extends TestInit{
 
 
         collaboratorList = api_getCollaborator(fileGuid);
-//        member = (List<String>) collaboratorList.get("member");
         role = (List<String>) collaboratorList.get("role");
         roleList.clear();
         addMemberList.clear();

@@ -87,8 +87,6 @@ public class TestInit implements shimoAPI{
         public final static String setCollaborator = "/files/{guid}/collaborators/{id}";
         public final static String addAdmin = "/files/{guid}/admins/{id}";
         public final static String delAdmin = "/files/{guid}/admins/{id}";
-
-
     }
 
     public String StringFormat(String s){
