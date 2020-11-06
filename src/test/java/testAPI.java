@@ -11,6 +11,7 @@ public class testAPI extends TestInit{
     String pwd;
     int desktopFile;
     int desktopFolder;
+    int space;
     String delFiles;
     String delSpace;
     String setCollaborator;
@@ -33,6 +34,7 @@ public class testAPI extends TestInit{
         pwd = StringFormat(data.get("password"));
         desktopFile = Integer.parseInt(StringFormat(data.get("fileCount")));
         desktopFolder = Integer.parseInt(StringFormat(data.get("folderCount")));
+        space = Integer.parseInt(StringFormat(data.get("space")));
         fileGuid = data.get("fileGuid");
         delFiles = data.get("delFiles");
         setCollaborator = data.get("setCollaborator");
@@ -76,11 +78,13 @@ public class testAPI extends TestInit{
         }
     }
 
+    //todo
     public void delSpace(){
         api_login(email,pwd);
         List<String> spaceGuid = api_space();
-        if(spaceGuid.size() != 0){
-            api_delSpace();
+
+        if(spaceGuid.size() > space){
+            api_delSpace(space);
         }else {
             System.out.println("没有多余协作空间需要删除");
         }

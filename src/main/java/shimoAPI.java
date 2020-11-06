@@ -6,5 +6,5 @@ public interface shimoAPI {
     List<String> api_getFile(String folderGuid);
     void api_delFile(int delFileCount, int delFolderCount);
     List<String> api_space();
-    void api_delSpace();
+    void api_delSpace(int space_count);
 }

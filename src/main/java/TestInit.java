@@ -291,7 +291,7 @@ public class TestInit implements shimoAPI{
      * @Time 2020-10-19
      */
     @Override
-    public void api_delSpace() {
+    public void api_delSpace(int space_count) {
         HttpDelete httpDelete = new HttpDelete(testUrl.URL + testUrl.delSpace);
         httpDelete.addHeader("Content-Type", "application/x-www-form-urlencoded; charset=utf-8");
         httpDelete.addHeader("Referer", "https://release.shimodev.com/login?from=home");
@@ -309,10 +309,16 @@ public class TestInit implements shimoAPI{
                 }
             }
 
-            if(delSpaceList.size() == 0){
+            if(delSpaceList.size() >= space_count){
+                for(int i = 0; i<space_count; i++){
+                    delSpaceList.remove(i);
+                }
+            }
+
+            if(delSpaceList.size() == 0 ){
                 System.out.println("没有多余的协作空间需要删除");
                 return;
-            }else {
+            } else {
                 for (int i = 0; i < delSpaceList.size(); i++) {
                     httpDelete.setURI(URI.create(testUrl.URL + testUrl.delSpace + "/" + delSpaceList.get(i)));
                     // 执行请求
