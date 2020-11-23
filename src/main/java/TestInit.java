@@ -4,6 +4,7 @@ import org.apache.commons.collections.map.ListOrderedMap;
 import org.apache.http.HttpEntity;
 import org.apache.http.NameValuePair;
 import org.apache.http.client.CookieStore;
+import org.apache.http.client.config.RequestConfig;
 import org.apache.http.client.entity.UrlEncodedFormEntity;
 import org.apache.http.client.methods.*;
 import org.apache.http.impl.client.BasicCookieStore;
@@ -45,7 +46,14 @@ public class TestInit implements shimoAPI{
 
     @BeforeMethod
     public void setUp() {
-        httpClient = HttpClients.custom().setDefaultCookieStore(cookies).build();
+        RequestConfig defaultRequestConfig = RequestConfig.custom()
+                .setSocketTimeout(10000)
+                .setConnectTimeout(10000)
+                .setConnectionRequestTimeout(10000)
+                .build();
+        httpClient = HttpClients.custom().setDefaultCookieStore(cookies).setDefaultRequestConfig(defaultRequestConfig).build();
+
+
         fileType.clear();
         fileGuid.clear();
         spaceGuid.clear();
