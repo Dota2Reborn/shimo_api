@@ -24,6 +24,7 @@ import java.util.LinkedList;
 import java.util.List;
 
 import static org.testng.Assert.assertEquals;
+import static org.testng.Assert.assertTrue;
 
 public class TestInit implements shimoAPI{
 
@@ -142,6 +143,9 @@ public class TestInit implements shimoAPI{
 
         } catch (Exception e) {
             e.printStackTrace();
+        }catch(AssertionError e){
+            System.out.println("Error：登录失败");
+            assertTrue(false);
         }
     }
 
@@ -186,6 +190,9 @@ public class TestInit implements shimoAPI{
 
         }catch(Exception e){
             e.printStackTrace();
+        }catch(AssertionError e){
+            System.out.println("Error：获取桌面文件失败");
+            assertTrue(false);
         }
         return fileType;
     }
@@ -245,6 +252,9 @@ public class TestInit implements shimoAPI{
             System.out.println("删除文件成功");
         }catch(Exception e){
                 e.printStackTrace();
+        }catch(AssertionError e){
+            System.out.println("Error：删除文件失败");
+            assertTrue(false);
         }
     }
 
@@ -286,6 +296,9 @@ public class TestInit implements shimoAPI{
 
         }catch(Exception e){
             e.printStackTrace();
+        }catch(AssertionError e){
+            System.out.println("Error：获取协作空间列表失败");
+            assertTrue(false);
         }
         return spaceGuid;
     }
@@ -337,6 +350,9 @@ public class TestInit implements shimoAPI{
             System.out.println("删除协作空间成功");
         }catch(Exception e){
             e.printStackTrace();
+        }catch(AssertionError e){
+            System.out.println("Error：删除协作空间失败");
+            assertTrue(false);
         }
     }
 
@@ -391,6 +407,9 @@ public class TestInit implements shimoAPI{
 
         }catch(Exception e){
             e.printStackTrace();
+        }catch(AssertionError e){
+            System.out.println("Error：获取协作者列表失败");
+            assertTrue(false);
         }
 
         return result;
@@ -434,6 +453,9 @@ public class TestInit implements shimoAPI{
 
         } catch (Exception e) {
             e.printStackTrace();
+        }catch(AssertionError e){
+            System.out.println("Error：添加协作者失败");
+            assertTrue(false);
         }
 
     }
@@ -464,6 +486,9 @@ public class TestInit implements shimoAPI{
             System.out.println("协作者删除成功");
         }catch(Exception e){
             e.printStackTrace();
+        }catch(AssertionError e){
+            System.out.println("Error：协作者删除失败");
+            assertTrue(false);
         }
     }
 
@@ -485,14 +510,17 @@ public class TestInit implements shimoAPI{
                 httpPut.addHeader("Cookie", cookies.getCookies().get(0).getName() + "=" + cookies.getCookies().get(0).getValue());
 
                 response = httpClient.execute(httpPut);
+
+                int StatusCode = response.getStatusLine().getStatusCode();
+                assertEquals(StatusCode,204,"管理者添加失败");
+                System.out.println("管理者添加成功");
             }
         }catch (Exception e){
             e.printStackTrace();
+        }catch(AssertionError e){
+            System.out.println("Error：管理者添加失败");
+            assertTrue(false);
         }
-
-        int StatusCode = response.getStatusLine().getStatusCode();
-        assertEquals(StatusCode,204,"管理者添加失败");
-        System.out.println("管理者添加成功");
     }
 
     /**
@@ -520,6 +548,9 @@ public class TestInit implements shimoAPI{
             System.out.println("管理者删除成功");
         }catch(Exception e){
             e.printStackTrace();
+        }catch(AssertionError e){
+            System.out.println("Error：管理者删除失败");
+            assertTrue(false);
         }
     }
 
@@ -556,6 +587,9 @@ public class TestInit implements shimoAPI{
             System.out.println("协作者权限修改成功");
         }catch(Exception e){
             e.printStackTrace();
+        }catch(AssertionError e){
+            System.out.println("Error：协作者权限修改失败");
+            assertTrue(false);
         }
     }
 
