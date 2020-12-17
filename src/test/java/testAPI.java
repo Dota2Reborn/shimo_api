@@ -56,6 +56,12 @@ public class testAPI extends TestInit{
 
     }
 
+    /**
+     * 删除文件
+     *
+     * @author 刘晨
+     * @Time 2020-10-19
+     */
     public void delDesktopFiles(String folderGuid){
         api_login(email,pwd);
         List<String> fileType = api_getFile(folderGuid);
@@ -78,6 +84,12 @@ public class testAPI extends TestInit{
         }
     }
 
+    /**
+     * 删除协作空间
+     *
+     * @author 刘晨
+     * @Time 2020-10-19
+     */
     public void delSpace(){
         api_login(email,pwd);
         List<String> spaceGuid = api_space();
@@ -89,6 +101,12 @@ public class testAPI extends TestInit{
         }
     }
 
+    /**
+     * 设置协作者
+     *
+     * @author 刘晨
+     * @Time 2020-10-19
+     */
     public void setCollaborator(){
         List<String> member;
         List<String> admin;
@@ -171,4 +189,5 @@ public class testAPI extends TestInit{
         }
 
     }
+
 }
