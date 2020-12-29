@@ -138,7 +138,7 @@ public class TestInit implements shimoAPI{
             response = httpClient.execute(httpPost);
 
             int StatusCode = response.getStatusLine().getStatusCode();
-            assertEquals(StatusCode,204,"登录失败");
+            assertEquals(StatusCode,200,"登录失败");
             System.out.println("登录成功");
 
         } catch (Exception e) {
